@@ -1,0 +1,83 @@
+---
+title: "Create Event"
+api: "POST /v1/events"
+description: "Send a new event"
+---
+
+Creates a new event and delivers it to all subscribed webhooks.
+
+<ParamField body="type" type="string" required>
+  The event type. We recommend using dot notation (e.g., `user.signup`).
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  The event payload. Can contain any JSON-serializable data.
+</ParamField>
+
+<ParamField body="idempotencyKey" type="string">
+  A unique key to prevent duplicate events. If you send the same key twice within 24 hours, the second request returns the original event.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.flux.dev/v1/events \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "order.completed",
+    "data": {
+      "orderId": "ord_8x7kj2",
+      "amount": 9900,
+      "currency": "usd"
+    }
+  }'
+```
+
+```typescript Node.js
+const event = await flux.events.send({
+  type: 'order.completed',
+  data: {
+    orderId: 'ord_8x7kj2',
+    amount: 9900,
+    currency: 'usd'
+  }
+});
+```
+
+```python Python
+event = flux.events.send(
+    type="order.completed",
+    data={
+        "orderId": "ord_8x7kj2",
+        "amount": 9900,
+        "currency": "usd"
+    }
+)
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": "evt_1a2b3c4d",
+  "type": "order.completed",
+  "created": "2024-01-15T10:30:00Z",
+  "data": {
+    "orderId": "ord_8x7kj2",
+    "amount": 9900,
+    "currency": "usd"
+  }
+}
+```
+
+```json 400
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The 'type' field is required",
+    "param": "type"
+  }
+}
+```
+</ResponseExample>
+

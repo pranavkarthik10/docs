@@ -1,0 +1,112 @@
+---
+title: "Authentication"
+description: "Secure your Flux integration with API keys"
+icon: "key"
+---
+
+Flux uses API keys to authenticate requests. You can view and manage your API keys in the [dashboard](https://app.flux.dev/settings/api-keys).
+
+## API Key Types
+
+| Type | Prefix | Use Case |
+|------|--------|----------|
+| Live | `sk_live_` | Production environment |
+| Test | `sk_test_` | Development and testing |
+
+Test keys only work with test data and don't trigger real webhooks or affect production resources.
+
+## Using Your API Key
+
+Include your API key in the `Authorization` header:
+
+```bash
+curl https://api.flux.dev/v1/events \
+  -H "Authorization: Bearer sk_live_your_api_key"
+```
+
+Or use the SDK, which handles authentication automatically:
+
+```typescript
+const flux = new Flux('sk_live_your_api_key');
+```
+
+<Warning>
+  Keep your API keys secure. Never commit them to version control or expose them in client-side code.
+</Warning>
+
+## Environment Variables
+
+We recommend storing your API key in an environment variable:
+
+<Tabs>
+  <Tab title="Node.js">
+    ```bash
+    # .env
+    FLUX_API_KEY=sk_live_your_api_key
+    ```
+
+    ```typescript
+    import Flux from '@flux/node';
+    const flux = new Flux(process.env.FLUX_API_KEY);
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```bash
+    # .env
+    FLUX_API_KEY=sk_live_your_api_key
+    ```
+
+    ```python
+    import os
+    from flux import Flux
+
+    flux = Flux(os.environ["FLUX_API_KEY"])
+    ```
+  </Tab>
+</Tabs>
+
+## Key Rotation
+
+To rotate an API key:
+
+1. Create a new key in the [dashboard](https://app.flux.dev/settings/api-keys)
+2. Update your application to use the new key
+3. Delete the old key
+
+<Tip>
+  Create a new key before deleting the old one to avoid downtime.
+</Tip>
+
+## Scoped Keys
+
+Enterprise plans support scoped API keys with limited permissions:
+
+```typescript
+const scopedKey = await flux.apiKeys.create({
+  name: 'Analytics Service',
+  scopes: ['events:read'],
+  expiresAt: '2025-01-01T00:00:00Z'
+});
+```
+
+Available scopes:
+
+| Scope | Description |
+|-------|-------------|
+| `events:read` | List and retrieve events |
+| `events:write` | Create events |
+| `webhooks:read` | List webhooks |
+| `webhooks:write` | Create and delete webhooks |
+
+## Rate Limits
+
+API requests are rate limited based on your plan:
+
+| Plan | Requests per second |
+|------|---------------------|
+| Free | 10 |
+| Pro | 100 |
+| Enterprise | Custom |
+
+When rate limited, you'll receive a `429` response with a `Retry-After` header.
+

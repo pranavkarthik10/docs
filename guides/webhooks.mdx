@@ -1,0 +1,132 @@
+---
+title: "Webhooks"
+description: "Receive events in real-time via HTTP callbacks"
+icon: "webhook"
+---
+
+Webhooks allow you to receive events as they happen. When an event occurs, Flux sends an HTTP POST request to your configured endpoint with the event payload.
+
+## Creating a Webhook
+
+You can create webhooks via the dashboard or API:
+
+<Tabs>
+  <Tab title="Dashboard">
+    1. Go to [Settings → Webhooks](https://app.flux.dev/settings/webhooks)
+    2. Click **Add Endpoint**
+    3. Enter your endpoint URL
+    4. Select the event types to subscribe to
+    5. Click **Create**
+  </Tab>
+  <Tab title="API">
+    ```bash
+    curl -X POST https://api.flux.dev/v1/webhooks \
+      -H "Authorization: Bearer sk_live_..." \
+      -H "Content-Type: application/json" \
+      -d '{
+        "url": "https://api.yourapp.com/webhooks/flux",
+        "events": ["order.completed", "user.signup"]
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const webhook = await flux.webhooks.create({
+      url: 'https://api.yourapp.com/webhooks/flux',
+      events: ['order.completed', 'user.signup']
+    });
+
+    console.log('Webhook created:', webhook.id);
+    console.log('Signing secret:', webhook.secret);
+    ```
+  </Tab>
+</Tabs>
+
+## Webhook Payload
+
+When an event is delivered, your endpoint receives a POST request:
+
+```json
+{
+  "id": "evt_1a2b3c4d",
+  "type": "order.completed",
+  "created": "2024-01-15T10:30:00Z",
+  "data": {
+    "orderId": "ord_8x7kj2",
+    "amount": 9900,
+    "currency": "usd",
+    "customerId": "cus_abc123"
+  }
+}
+```
+
+## Verifying Signatures
+
+Every webhook request includes a signature header. **Always verify this signature** to ensure the request came from Flux.
+
+```typescript
+import { Flux } from '@flux/node';
+
+app.post('/webhooks/flux', (req, res) => {
+  const signature = req.headers['flux-signature'];
+  const payload = req.body;
+
+  try {
+    const event = flux.webhooks.verify(payload, signature, webhookSecret);
+    
+    switch (event.type) {
+      case 'order.completed':
+        handleOrderCompleted(event.data);
+        break;
+      case 'user.signup':
+        handleUserSignup(event.data);
+        break;
+    }
+
+    res.status(200).send('OK');
+  } catch (err) {
+    console.error('Invalid signature');
+    res.status(400).send('Invalid signature');
+  }
+});
+```
+
+<Warning>
+  Never process webhooks without verifying the signature. This prevents attackers from sending fake events to your endpoint.
+</Warning>
+
+## Retry Policy
+
+If your endpoint returns a non-2xx status code or times out, Flux retries the delivery:
+
+| Attempt | Delay |
+|---------|-------|
+| 1 | Immediate |
+| 2 | 1 minute |
+| 3 | 5 minutes |
+| 4 | 30 minutes |
+| 5 | 2 hours |
+
+After 5 failed attempts, the event is marked as failed and you'll receive an alert.
+
+## Testing Locally
+
+Use the Flux CLI to forward webhooks to your local development server:
+
+```bash
+flux listen --forward-to localhost:3000/webhooks/flux
+```
+
+This creates a temporary public URL and forwards all webhook events to your local server.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Event Types" icon="list" href="/guides/events">
+    See all available event types
+  </Card>
+  <Card title="Webhook API" icon="terminal" href="/api-reference/webhooks/list">
+    Manage webhooks via API
+  </Card>
+</CardGroup>
+

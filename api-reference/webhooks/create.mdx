@@ -1,0 +1,77 @@
+---
+title: "Create Webhook"
+api: "POST /v1/webhooks"
+description: "Register a new webhook endpoint"
+---
+
+Creates a new webhook endpoint. When events matching the specified types occur, Flux will send a POST request to this URL.
+
+<ParamField body="url" type="string" required>
+  The URL to receive webhook events. Must be HTTPS.
+</ParamField>
+
+<ParamField body="events" type="string[]" required>
+  Array of event types to subscribe to. Use `["*"]` to receive all events.
+</ParamField>
+
+<ParamField body="description" type="string">
+  A description for this webhook endpoint.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.flux.dev/v1/webhooks \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://api.yourapp.com/webhooks/flux",
+    "events": ["order.completed", "user.signup"],
+    "description": "Production webhook"
+  }'
+```
+
+```typescript Node.js
+const webhook = await flux.webhooks.create({
+  url: 'https://api.yourapp.com/webhooks/flux',
+  events: ['order.completed', 'user.signup'],
+  description: 'Production webhook'
+});
+```
+
+```python Python
+webhook = flux.webhooks.create(
+    url="https://api.yourapp.com/webhooks/flux",
+    events=["order.completed", "user.signup"],
+    description="Production webhook"
+)
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": "wh_abc123",
+  "url": "https://api.yourapp.com/webhooks/flux",
+  "events": ["order.completed", "user.signup"],
+  "description": "Production webhook",
+  "status": "active",
+  "secret": "whsec_a1b2c3d4e5f6...",
+  "created": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 400
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "URL must use HTTPS",
+    "param": "url"
+  }
+}
+```
+</ResponseExample>
+
+<Note>
+  Save the `secret` from the response. You'll need it to verify webhook signatures. This is the only time the secret is returned.
+</Note>
+

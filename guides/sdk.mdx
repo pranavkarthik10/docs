@@ -1,0 +1,113 @@
+---
+title: "SDK Setup"
+description: "Install and configure the Flux SDK for your platform"
+icon: "code"
+---
+
+Flux provides official SDKs for Node.js, Python, Go, and Ruby. Each SDK provides idiomatic access to the Flux API with built-in retry logic, type safety, and error handling.
+
+## Installation
+
+<Tabs>
+  <Tab title="Node.js">
+    ```bash
+    npm install @flux/node
+    ```
+
+    The Node.js SDK supports Node 18+ and includes TypeScript definitions.
+  </Tab>
+  <Tab title="Python">
+    ```bash
+    pip install flux-python
+    ```
+
+    The Python SDK supports Python 3.8+ and includes type hints.
+  </Tab>
+  <Tab title="Go">
+    ```bash
+    go get github.com/flux-events/flux-go
+    ```
+
+    The Go SDK supports Go 1.19+.
+  </Tab>
+</Tabs>
+
+## Configuration
+
+Initialize the client with your API key:
+
+<CodeGroup>
+```typescript Node.js
+import Flux from '@flux/node';
+
+const flux = new Flux(process.env.FLUX_API_KEY, {
+  // Optional configuration
+  timeout: 30000,        // Request timeout in ms
+  maxRetries: 3,         // Retry failed requests
+  baseUrl: 'https://api.flux.dev/v1'  // API endpoint
+});
+```
+
+```python Python
+from flux import Flux
+
+flux = Flux(
+    api_key=os.environ["FLUX_API_KEY"],
+    timeout=30.0,
+    max_retries=3
+)
+```
+
+```go Go
+import "github.com/flux-events/flux-go"
+
+client := flux.New(
+    os.Getenv("FLUX_API_KEY"),
+    flux.WithTimeout(30 * time.Second),
+    flux.WithMaxRetries(3),
+)
+```
+</CodeGroup>
+
+## Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `timeout` | `30000` | Request timeout in milliseconds |
+| `maxRetries` | `3` | Number of retries for failed requests |
+| `baseUrl` | `https://api.flux.dev/v1` | API base URL |
+
+## Error Handling
+
+The SDK throws typed errors that you can catch and handle:
+
+```typescript
+import Flux, { FluxError, RateLimitError, AuthenticationError } from '@flux/node';
+
+try {
+  await flux.events.send({ type: 'test', data: {} });
+} catch (error) {
+  if (error instanceof RateLimitError) {
+    // Wait and retry
+    console.log(`Rate limited. Retry after ${error.retryAfter}s`);
+  } else if (error instanceof AuthenticationError) {
+    // Invalid API key
+    console.error('Check your API key');
+  } else if (error instanceof FluxError) {
+    // Other API error
+    console.error(error.message, error.code);
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Send Events" icon="paper-plane" href="/guides/events">
+    Learn how to send and structure events
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/guides/webhooks">
+    Receive events in real-time
+  </Card>
+</CardGroup>
+

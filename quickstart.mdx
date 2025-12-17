@@ -1,80 +1,95 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Send your first event with Flux in under 5 minutes"
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, you'll need:
 
-### Step 1: Set up your local environment
+- A [Flux account](https://app.flux.dev/signup)
+- Your API key from the [dashboard](https://app.flux.dev/settings/api-keys)
+- Node.js 18+ (or Python 3.8+, Go 1.19+)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+## 1. Install the SDK
 
-### Step 2: Deploy your changes
+<CodeGroup>
+```bash npm
+npm install @flux/node
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+```bash yarn
+yarn add @flux/node
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+```bash pnpm
+pnpm add @flux/node
+```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+```bash pip
+pip install flux-python
+```
 
-### Step 3: Go live
+```bash go
+go get github.com/flux-events/flux-go
+```
+</CodeGroup>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## 2. Initialize the Client
 
-## Next steps
+Create a new Flux client with your API key:
 
-Now that you have your docs running, explore these key features:
+```typescript
+import Flux from '@flux/node';
+
+const flux = new Flux(process.env.FLUX_API_KEY);
+```
+
+<Warning>
+  Never hardcode your API key. Use environment variables to keep it secure.
+</Warning>
+
+## 3. Send an Event
+
+Events in Flux have a `type` and a `data` payload. The type is a string that identifies the kind of event (we recommend using dot notation like `user.signup`).
+
+```typescript
+const event = await flux.events.send({
+  type: 'order.completed',
+  data: {
+    orderId: 'ord_8x7kj2',
+    amount: 9900,
+    currency: 'usd',
+    customerId: 'cus_abc123'
+  }
+});
+
+console.log('Event sent:', event.id);
+```
+
+## 4. Verify It Worked
+
+Head to the [Events tab](https://app.flux.dev/events) in your dashboard. You should see your event logged with its full payload and metadata.
+
+<Frame>
+  <img src="/images/hero-dark.png" alt="Flux dashboard showing event log" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## Next Steps
+
+Now that you've sent your first event, explore these guides:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Set Up Webhooks" icon="webhook" href="/guides/webhooks">
+    Receive events in real-time via HTTP
+  </Card>
+  <Card title="Event Filtering" icon="filter" href="/guides/events">
+    Subscribe to specific event types
+  </Card>
+  <Card title="Authentication" icon="key" href="/guides/authentication">
+    Secure your integration
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Full API documentation
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

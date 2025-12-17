@@ -1,0 +1,125 @@
+---
+title: "Events"
+description: "Send, receive, and work with events"
+icon: "bolt"
+---
+
+Events are the core primitive in Flux. An event represents something that happened in your application—a user signed up, an order was placed, a payment succeeded.
+
+## Event Structure
+
+Every event has a consistent structure:
+
+```json
+{
+  "id": "evt_1a2b3c4d",
+  "type": "order.completed",
+  "created": "2024-01-15T10:30:00Z",
+  "data": {
+    "orderId": "ord_8x7kj2",
+    "amount": 9900,
+    "currency": "usd"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique event identifier |
+| `type` | string | Event type (e.g., `user.signup`) |
+| `created` | string | ISO 8601 timestamp |
+| `data` | object | Event payload |
+
+## Sending Events
+
+Use the SDK to send events:
+
+```typescript
+const event = await flux.events.send({
+  type: 'user.signup',
+  data: {
+    userId: 'usr_123',
+    email: 'jane@example.com',
+    plan: 'pro',
+    source: 'organic'
+  }
+});
+```
+
+### Idempotency
+
+To prevent duplicate events, pass an idempotency key:
+
+```typescript
+await flux.events.send({
+  type: 'payment.succeeded',
+  data: { paymentId: 'pay_xyz' }
+}, {
+  idempotencyKey: 'pay_xyz_success'
+});
+```
+
+If you send the same idempotency key twice within 24 hours, the second request returns the original event without creating a duplicate.
+
+## Event Types
+
+We recommend using dot notation to organize your event types:
+
+| Pattern | Example | Use Case |
+|---------|---------|----------|
+| `resource.action` | `user.signup` | Standard events |
+| `resource.action.status` | `payment.charge.failed` | Events with outcomes |
+
+### Common Event Types
+
+```
+user.signup
+user.login
+user.updated
+user.deleted
+
+order.created
+order.completed
+order.cancelled
+
+payment.succeeded
+payment.failed
+payment.refunded
+
+subscription.created
+subscription.renewed
+subscription.cancelled
+```
+
+## Listing Events
+
+Retrieve events from the API:
+
+```typescript
+const events = await flux.events.list({
+  type: 'order.completed',
+  limit: 50,
+  startDate: '2024-01-01',
+  endDate: '2024-01-31'
+});
+
+for (const event of events.data) {
+  console.log(event.id, event.type, event.created);
+}
+```
+
+## Event Retention
+
+Events are stored for **90 days** on all plans. Enterprise customers can configure longer retention periods.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Webhooks" icon="webhook" href="/guides/webhooks">
+    Receive events in real-time
+  </Card>
+  <Card title="Events API" icon="terminal" href="/api-reference/events/list">
+    Full Events API reference
+  </Card>
+</CardGroup>
+
