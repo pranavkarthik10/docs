@@ -44,6 +44,7 @@ Flux is a real-time event platform that makes it easy to build event-driven appl
 Here's how simple it is to send an event with Flux:
 
 <CodeGroup>
+
 ```typescript Node.js
 import Flux from '@flux/node';
 
@@ -58,6 +59,7 @@ await flux.events.send({
   }
 });
 ```
+
 
 ```python Python
 from flux import Flux
@@ -74,6 +76,7 @@ flux.events.send(
 )
 ```
 
+
 ```go Go
 import "github.com/flux-events/flux-go"
 
@@ -88,4 +91,5 @@ client.Events.Send(&flux.Event{
     },
 })
 ```
+
 </CodeGroup>
